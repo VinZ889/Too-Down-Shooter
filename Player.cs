@@ -4,20 +4,45 @@ using UnityEngine;
 
 public class Player : MonoBehaviour
 {
-    public InventoryObject Inventory;
+    public Inventory inventory;
+    public GameObject inventoryUI; //added by myself
+    public int health = 30;
+    public int experience = 30;
+    public int gold = 500;
 
-    public void OnTriggerEnter(Collider other)
+    public Quest quest;
+    void Update()
     {
-        var item = other.GetComponent<Item>();
-        if (item)
+        if (Input.GetButtonDown("Inventory"))
         {
-            Inventory.AddItem(item.item, 1);
+            inventoryUI.SetActive(!inventoryUI.activeSelf);
+        }
+    }// added by myself
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.tag == "Item")
+        {
+            inventory.AddItem(other.GetComponent<Item>());
             Destroy(other.gameObject);
         }
     }
 
-    private void OnApplicationQuit()
+    public void GoBattle()
     {
-        Inventory.Container.Clear();
+        health -= 5;
+        experience += 10;
+        gold += 10;
+
+        if (quest.isActive)
+        {
+            quest.questGoal.EnemyDestroy();
+            if (quest.questGoal.IsReached())
+            {
+                experience += quest.experienceReward;
+                gold += quest.goldReward;
+                quest.Complete();
+            }
+        }
     }
 }
